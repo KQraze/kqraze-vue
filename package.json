@@ -1,6 +1,6 @@
 {
   "name": "@kqraze/vue",
-  "version": "1.0.8",
+  "version": "2.0.2",
   "description": "A lightweight Vue 3 composable for handling API requests with caching, reactivity, and hooks support.",
   "main": "./index.cjs",
   "module": "./index.js",
@@ -8,7 +8,9 @@
   "files": [
     "index.js",
     "index.d.ts",
-    "index.cjs"
+    "index.cjs",
+    "use-api",
+    "create-event-hook"
   ],
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -16,7 +18,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/KQraze/useApi.git"
+    "url": "https://github.com/KQraze/kqraze-vue.git"
   },
   "keywords": [
     "vue",

@@ -1,12 +1,27 @@
-type Handler = <T>(data?: T) => void
+export type Handler<T = any> = (data?: T) => void;
 
-export function createEventHook() {
-    const handlers = new Set()
+export type SubscribeEvent<T> = (handler: Handler<T>) => void;
 
-    const trigger: Handler = <T>(data?: T) => handlers.forEach((handler: any)=> handler(data))
+export type EventHook<T = any> = {
+    on: SubscribeEvent<T>;
+    off: SubscribeEvent<T>;
+    trigger: (data?: T) => void;
+};
 
-    const on = (handler) => handlers.add(handler)
-    const off = (handler) => handler.delete(handler)
+export function createEventHook<T = any>(): EventHook<T> {
+    const handlers = new Set<Handler<T>>();
 
-    return { trigger, on, off }
+    const trigger: Handler<T> = (data?: T) => {
+        handlers.forEach((handler) => handler(data));
+    };
+
+    const on = (handler: Handler<T>) => {
+        handlers.add(handler);
+    };
+
+    const off = (handler: Handler<T>) => {
+        handlers.delete(handler);
+    };
+
+    return { trigger, on, off };
 }
