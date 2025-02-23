@@ -1,0 +1,49 @@
+{
+  "name": "@kqraze/useapi",
+  "version": "1.0.7",
+  "description": "A lightweight Vue 3 composable for handling API requests with caching, reactivity, and hooks support.",
+  "main": "./index.cjs",
+  "module": "./index.js",
+  "types": "./index.d.ts",
+  "files": [
+    "index.js",
+    "index.d.ts",
+    "index.cjs"
+  ],
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "vite build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/KQraze/useApi.git"
+  },
+  "keywords": [
+    "vue",
+    "vue3",
+    "api",
+    "composable",
+    "caching",
+    "hooks",
+    "reactivity"
+  ],
+  "author": {
+    "name": "KQraze",
+    "email": "pavel.eliseev061@gmail.com"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/KQraze/useApi/issues"
+  },
+  "homepage": "https://github.com/KQraze/useApi#readme",
+  "peerDependencies": {
+    "vue": "^3.5.13"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.2.1",
+    "@vitejs/plugin-vue-jsx": "^4.1.1",
+    "typescript": "^5.7.3",
+    "vite": "^6.1.1",
+    "vite-plugin-dts": "^4.5.0"
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "target": "ESNext", // Целевая версия JavaScript
+    "module": "ESNext", // Используем ES-модули
+    "moduleResolution": "node", // Для правильного разрешения модулей
+    "strict": true, // Включить строгую проверку типов
+    "esModuleInterop": true, // Для совместимости с CommonJS
+    "skipLibCheck": true, // Пропускать проверку типов в библиотеках
+    "forceConsistentCasingInFileNames": true,
+    "declaration": true, // Генерировать файлы .d.ts
+    "outDir": "./dist", // Папка для скомпилированных файлов
+    "rootDir": "./src", // Папка с исходным кодом
+    "lib": ["DOM", "ESNext"], // Подключаемые библиотеки
+    "types": ["vite/client"] // Поддержка типов Vite
+  },
+  "include": ["src/**/*"], // Какие файлы компилировать
+  "exclude": ["node_modules", "dist"] // Какие файлы игнорировать
+}
