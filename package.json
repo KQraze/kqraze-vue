@@ -1,6 +1,6 @@
 {
-  "name": "@kqraze/useapi",
-  "version": "1.0.7",
+  "name": "@kqraze/vue",
+  "version": "1.0.8",
   "description": "A lightweight Vue 3 composable for handling API requests with caching, reactivity, and hooks support.",
   "main": "./index.cjs",
   "module": "./index.js",
@@ -33,9 +33,9 @@
   },
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/KQraze/useApi/issues"
+    "url": "https://github.com/KQraze/kqraze-vue/issues"
   },
-  "homepage": "https://github.com/KQraze/useApi#readme",
+  "homepage": "https://github.com/KQraze/kqraze-vue#readme",
   "peerDependencies": {
     "vue": "^3.5.13"
   },
