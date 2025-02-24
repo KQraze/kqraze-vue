@@ -1,12 +1,5 @@
-import { computed, ref, shallowRef, watchEffect, Ref } from 'vue';
-import { createEventHook, SubscribeEvent } from '../create-event-hook';
-
-/**
- * Represents the response data from the API request.
- * It can be either the raw result (`Result`), the adapted result (`AdaptedResult`), or `null`.
- */
-export type ResponseData<Result, AdaptedResult> = Result | AdaptedResult | null;
-
+import {computed, ref, shallowRef, watchEffect, Ref} from 'vue';
+import {createEventHook, SubscribeEvent} from '../create-event-hook';
 /**
  * A function that adapts the raw response from the API into a different shape or structure.
  * @param response - The raw response from the API.
@@ -15,12 +8,24 @@ export type ResponseData<Result, AdaptedResult> = Result | AdaptedResult | null;
 export type AdapterFunction<Result, AdaptedResult> = (response: Result) => AdaptedResult;
 
 /**
+ * Determines the data type returned by `useApi` based on the provided options.
+ *
+ * If an `adapter` function is provided in `UseApiOptions`, the result will be of type `AdaptedResult`.
+ * Otherwise, it will be of type `Result | null`.
+ */
+export type UseApiData<Result, AdaptedResult, Options extends UseApiOptions<Result, AdaptedResult>> = Options extends {
+        adapter: AdapterFunction<Result, AdaptedResult>
+    }
+    ? AdaptedResult
+    : Result | null;
+
+/**
  * Configuration options for the `useApi` composable.
  * @property adapter - An optional adapter function to transform the raw API response.
  */
 export type UseApiOptions<Result, AdaptedResult> = {
     /**
-     * `adapter` - An optional adapter function to transform the raw API response.
+     * `adapter` - An optional function to adapt the raw API response into a different structure.
      * */
     adapter?: AdapterFunction<Result, AdaptedResult>;
 };
@@ -29,7 +34,7 @@ export type UseApiOptions<Result, AdaptedResult> = {
  * The return type of the `useApi` composable.
  * Provides methods and properties to interact with the API, manage cache, and handle events.
  */
-export interface UseApiReturn<Result, AdaptedResult> {
+export interface UseApiReturn<Result, AdaptedResult, Options extends UseApiOptions<Result, AdaptedResult>> {
     /**
      * Indicates whether the request is currently in progress.
      */
@@ -55,7 +60,7 @@ export interface UseApiReturn<Result, AdaptedResult> {
      * @param args - The arguments to pass to the API request.
      * @returns The result of the API request, either raw or adapted.
      */
-    execute: (...args: any[]) => Promise<ResponseData<Result, AdaptedResult>>;
+    execute: (...args: any[]) => Promise<UseApiData<Result, AdaptedResult, Options>>;
     /**
      * Executes the API request, ignoring the cache.
      *
@@ -73,18 +78,18 @@ export interface UseApiReturn<Result, AdaptedResult> {
      * @param args - The arguments to pass to the API request.
      * @returns A reactive reference to the API result.
      */
-    getRef: (defaultValue: ResponseData<Result, AdaptedResult>, ...args: any[]) => Ref<ResponseData<Result, AdaptedResult>>;
+    getRef: (defaultValue?: UseApiData<Result, AdaptedResult, Options>, ...args: any[]) => Ref<UseApiData<Result, AdaptedResult, Options>>;
     /**
      * Groups cached results by a specific argument index.
      * @param index - The index of the argument to group by. If `-1`, groups all results.
      * @param arg - The value of the argument to filter by.
      * @returns A reactive reference to the grouped results.
      */
-    getGroupByArg: (index?: number, arg?: any) => Ref<ResponseData<Result, AdaptedResult>[]>;
+    getGroupByArg: (index?: number, arg?: any) => Ref<UseApiData<Result, AdaptedResult, Options>[]>;
     /**
      * Subscribes to the success event, triggered when a request completes successfully.
      */
-    onSuccess: SubscribeEvent<ResponseData<Result, AdaptedResult>>;
+    onSuccess: SubscribeEvent<UseApiData<Result, AdaptedResult, Options>>;
     /**
      * Subscribes to the error event, triggered when a request fails.
      */
@@ -104,8 +109,9 @@ export interface UseApiReturn<Result, AdaptedResult> {
 export function useApi<Result, AdaptedResult = Result>(
     request: (...args: any[]) => Promise<Result>,
     options?: UseApiOptions<Result, AdaptedResult>,
-): UseApiReturn<Result, AdaptedResult> {
-    type Data = ResponseData<Result, AdaptedResult>;
+): UseApiReturn<Result, AdaptedResult, UseApiOptions<Result, AdaptedResult>> {
+
+    type Data = UseApiData<Result, AdaptedResult, UseApiOptions<Result, AdaptedResult>>;
 
     const isLoading: Ref<boolean> = ref(false);
     const error: Ref<Error | null> = ref(null);
@@ -131,11 +137,11 @@ export function useApi<Result, AdaptedResult = Result>(
             const response = await request(...args);
             const adaptedData = options?.adapter ? options.adapter(response) : (response as unknown as Result);
 
-            cache.value.set(cacheKey, adaptedData);
+            cache.value.set(cacheKey, adaptedData as Data);
 
-            successHook.trigger(adaptedData);
+            successHook.trigger(adaptedData as Data);
 
-            return adaptedData;
+            return adaptedData as Data;
         } catch (err: any) {
             error.value = err;
 
@@ -162,8 +168,8 @@ export function useApi<Result, AdaptedResult = Result>(
         cache.value.clear();
     };
 
-    const getRef = (defaultValue: Data | null = null, ...args: any[]): Ref<Data | null> => {
-        const result = shallowRef<Data | null>(defaultValue);
+    const getRef = (defaultValue: Data = null, ...args: any[]): Ref<Data> => {
+        const result = shallowRef<Data>(defaultValue);
 
         watchEffect(async () => {
             triggerRef.value;
