@@ -1,4 +1,4 @@
-# ✨ `useApi`
+# ✨ `useApi()`
 
 ---
 `useApi` is a Vue 3 composable for handling API requests. It supports caching, error handling, data adaptation, and event subscriptions.
