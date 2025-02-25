@@ -10,7 +10,7 @@ npm install -D @kqraze/vue
 ## ✅ Active functions list:
 
 - ###  [useApi()](https://github.com/KQraze/kqraze-vue/tree/main/src/use-api)
-- ###  [createEventHook()]()
+- ###  [createEventHook()](https://github.com/KQraze/kqraze-vue/blob/main/src/create-event-hook/index.md)
 
 ## 🎯 Usage
 ```ts
