@@ -155,19 +155,6 @@ export function useApi<Result, AdaptedResult = Result>(
         }
     };
 
-    const load = (...args: any[]): void => {
-        execute(true, ...args).then(() => triggerRef.value++);
-    };
-
-    const clearOne = (...args: any[]): void => {
-        const cacheKey = JSON.stringify(args);
-        cache.value.delete(cacheKey);
-    };
-
-    const clear = (): void => {
-        cache.value.clear();
-    };
-
     const getRef = (defaultValue: Data = null, ...args: any[]): Ref<Data> => {
         const result = shallowRef<Data>(defaultValue);
 
