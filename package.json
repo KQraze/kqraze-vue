@@ -1,6 +1,6 @@
 {
   "name": "@kqraze/vue",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "description": "A lightweight Vue 3 composable for handling API requests with caching, reactivity, and hooks support.",
   "main": "./index.cjs",
   "module": "./index.js",
