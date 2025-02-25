@@ -9,8 +9,9 @@ npm install -D @kqraze/vue
 
 ## ✅ Active functions list:
 
-- ###  [useApi()](https://github.com/KQraze/kqraze-vue/tree/main/src/use-api)
-- ###  [createEventHook()](https://github.com/KQraze/kqraze-vue/blob/main/src/create-event-hook/index.md)
+> 🔹 [useApi()](https://github.com/KQraze/kqraze-vue/tree/main/src/use-api/index.md) is used for APIs with caching, processing of the state and data adaptation.
+
+> 🔹 [createEventHook()](https://github.com/KQraze/kqraze-vue/blob/main/src/create-event-hook/index.md) is a utility for managing events, allowing you to subscribe, unsubscribe and call handlers.
 
 ## 🎯 Usage
 ```ts
