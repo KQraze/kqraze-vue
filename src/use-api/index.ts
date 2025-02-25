@@ -136,20 +136,11 @@ export function useApi<Result, AdaptedResult = Result>(
         return result;
     };
 
-    const getGroupByArg = (index: number = -1, arg: any = null): Ref<Data[]> => {
+    const getGroupByArg = (index: number = -1, arg?: any): Ref<Data[]> => {
         return computed(() => {
-            const data: Data[] = [];
-            for (const key of cache.value.keys()) {
-                if (index === -1) {
-                    data.push(cache.value.get(key)!);
-                } else {
-                    let args = JSON.parse(key);
-                    if (args[index] && JSON.stringify(args[index]) === JSON.stringify(arg)) {
-                        data.push(cache.value.get(key)!);
-                    }
-                }
-            }
-            return data;
+            return [...cache.value.entries()]
+                .filter(([key]) => index === -1 || JSON.stringify(JSON.parse(key)[index]) === JSON.stringify(arg))
+                .map(([, value]) => value);
         });
     };
 
