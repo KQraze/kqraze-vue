@@ -1,132 +1,93 @@
-import {computed, ref, shallowRef, watchEffect, Ref} from 'vue';
-import {createEventHook, SubscribeEvent} from '../create-event-hook';
+import { computed, ref, shallowRef, watchEffect, Ref } from 'vue';
+import { createEventHook, SubscribeEvent } from '../create-event-hook';
 
 /**
- * A function that adapts the raw response from the API into a different shape or structure.
- * @param response - The raw response from the API.
- * @returns The adapted response.
+ * Function type for adapting API response data.
+ * @template Result - The original response type from the API.
+ * @template AdaptedResult - The transformed type after applying the adapter function.
  */
 export type AdapterFunction<Result, AdaptedResult> = (response: Result) => AdaptedResult;
 
 /**
- * Determines the data type returned by `useApi` based on the provided options.
- *
- * If an `adapter` function is provided in `UseApiOptions`, the result will be of type `AdaptedResult`.
- * Otherwise, it will be of type `Result | null`.
+ * The return type of the useApi composable.
+ * @template Data - The type of the data returned from the API (adapted or raw).
  */
-export type UseApiData<Result, AdaptedResult> = Result | AdaptedResult;
-
-
-export interface UseApiOptions {}
-/**
- * Configuration options for the `useApi` composable.
- * @property adapter - An optional adapter function to transform the raw API response.
- */
-export interface UseApiOptions<Result, AdaptedResult> {
-    /**
-     * `adapter` - An optional function to adapt the raw API response into a different structure.
-     * */
-    adapter: AdapterFunction<Result, AdaptedResult>;
-}
-
-/**
- * The return type of the `useApi` composable.
- * Provides methods and properties to interact with the API, manage cache, and handle events.
- */
-export interface UseApiReturn<Result> {
-    /**
-     * Indicates whether the request is currently in progress.
-     */
+export type UseApiReturn<Data> = {
+    /** Indicates whether the API request is in progress. */
     isLoading: Ref<boolean>;
-    /**
-     * Stores the error from the server, updated on each `execute` call.
-     */
+
+    /** Stores an error if the API request fails. */
     error: Ref<Error | null>;
-    /**
-     * Clears all cached data for the API.
-     */
+
+    /** Clears the entire cache of stored API responses. */
     clear: () => void;
-    /**
-     * Clears the cache for a specific set of arguments.
-     * @param args - The arguments used as the cache key.
-     */
+
+    /** Removes a specific cached response based on provided arguments. */
     clearOne: (...args: any[]) => void;
-    /**
-     * Executes the API request and caches the result.
-     *
-     * If the result is already cached, it returns the cached value without making a new request.
-     *
-     * @param args - The arguments to pass to the API request.
-     * @returns The result of the API request, either raw or adapted.
-     */
-    execute: (...args: any[]) => Promise<Result>;
-    /**
-     * Executes the API request, ignoring the cache.
-     *
-     * If a cache entry exists for the given arguments, it updates the cache with the new result.
-     *
-     * @param args - The arguments to pass to the API request.
-     */
+
+    /** Executes the API request and returns the data. Uses caching unless explicitly bypassed. */
+    execute: (...args: any[]) => Promise<Data>;
+
+    /** Forces a reload of data without using cache. */
     load: (...args: any[]) => void;
+
     /**
-     * Returns a reactive reference to the API result.
-     *
-     * Automatically updates when the cache or arguments change.
-     *
-     * @param defaultValue - The default value to return if the request fails or is pending.
-     * @param args - The arguments to pass to the API request.
-     * @returns A reactive reference to the API result.
+     * Returns a reactive reference to the API response data.
+     * @param defaultValue - The initial value before the request completes.
+     * @param args - Arguments used for fetching the data.
      */
-    getRef: (defaultValue?: Result, ...args: any[]) => Ref<Result>;
+    getRef: (defaultValue?: Data, ...args: any[]) => Ref<Data>;
+
     /**
-     * Groups cached results by a specific argument index.
-     * @param index - The index of the argument to group by. If `-1`, groups all results.
-     * @param arg - The value of the argument to filter by.
-     * @returns A reactive reference to the grouped results.
+     * Retrieves a reactive array of results grouped by a specific argument.
+     * @param index - The position of the argument to filter by.
+     * @param arg - The value to match against in the argument list.
      */
-    getGroupByArg: (index?: number, arg?: any) => Ref<Result[]>;
-    /**
-     * Subscribes to the success event, triggered when a request completes successfully.
-     */
-    onSuccess: SubscribeEvent<Result>;
-    /**
-     * Subscribes to the error event, triggered when a request fails.
-     */
+    getGroupByArg: (index?: number, arg?: any) => Ref<Data[]>;
+
+    /** Event triggered when a request succeeds. */
+    onSuccess: SubscribeEvent<Data>;
+
+    /** Event triggered when a request fails. */
     onError: SubscribeEvent<Error | null>;
-    /**
-     * Subscribes to the finally event, triggered when a request completes (regardless of success or failure).
-     */
+
+    /** Event triggered when a request completes, regardless of success or failure. */
     onFinally: SubscribeEvent<void>;
-}
+};
 
-
+/**
+ * Composable for handling API requests with caching, state management, and optional data adaptation.
+ * @template Result - The original API response type.
+ * @param request - A function that returns a Promise resolving to API data.
+ * @param options
+ */
 export function useApi<Result>(
     request: (...args: any[]) => Promise<Result>,
-    options: UseApiOptions
+    options?: { adapter?: undefined }
 ): UseApiReturn<Result>;
 
-export function useApi<Result, AdaptedResult = Result>(
+/**
+ * Overload for useApi when an adapter function is provided.
+ * @template Result - The original API response type.
+ * @template AdaptedResult - The transformed type after applying the adapter function.
+ */
+export function useApi<Result, AdaptedResult>(
     request: (...args: any[]) => Promise<Result>,
-    options: UseApiOptions<Result, AdaptedResult>
+    options: { adapter: AdapterFunction<Result, AdaptedResult> }
 ): UseApiReturn<AdaptedResult>;
 
 /**
- * A composable function to handle API requests with caching, adapters, and event hooks.
- * @param request - The function that performs the API request.
- * @param options - Optional configuration, including an adapter function.
- * @returns An object with methods and properties to interact with the API.
+ * Implementation of the useApi composable.
  */
 export function useApi<Result, AdaptedResult = Result>(
     request: (...args: any[]) => Promise<Result>,
-    options?: UseApiOptions,
-): UseApiReturn<AdaptedResult>;  {
-
-    type Data = UseApiData<Result, AdaptedResult>;
+    options?: { adapter?: AdapterFunction<Result, AdaptedResult> }
+): UseApiReturn<AdaptedResult extends Result ? Result : AdaptedResult> {
+    type Data = AdaptedResult extends Result ? Result : AdaptedResult;
 
     const isLoading: Ref<boolean> = ref(false);
     const error: Ref<Error | null> = ref(null);
     const triggerRef: Ref<number> = ref(0);
-
     const cache: Ref<Map<string, Data>> = ref(new Map());
 
     const successHook = createEventHook<Data>();
@@ -135,7 +96,6 @@ export function useApi<Result, AdaptedResult = Result>(
 
     const execute = async (ignoreCache = false, ...args: any[]): Promise<Data> => {
         const cacheKey = JSON.stringify(args);
-
         if (!ignoreCache && cache.value.has(cacheKey)) {
             return cache.value.get(cacheKey)!;
         }
@@ -145,56 +105,50 @@ export function useApi<Result, AdaptedResult = Result>(
 
         try {
             const response = await request(...args);
-            const adaptedData = options?.adapter ? options.adapter(response) : (response as unknown as Result);
+            const adaptedData = options?.adapter
+                ? options.adapter(response) as Data
+                : (response as unknown as Data);
 
-            cache.value.set(cacheKey, adaptedData as Data);
+            cache.value.set(cacheKey, adaptedData);
+            successHook.trigger(adaptedData);
 
-            successHook.trigger(adaptedData as Data);
-
-            return adaptedData as Data;
+            return adaptedData;
         } catch (err: any) {
             error.value = err;
-
             errorHook.trigger(err);
-
             throw err;
         } finally {
             isLoading.value = false;
-
             finallyHook.trigger();
         }
     };
 
-    const getRef = (defaultValue: Data = null, ...args: any[]): Ref<Data> => {
-        const result = shallowRef<Data>(defaultValue);
-
+    const getRef = (defaultValue?: Data, ...args: any[]): Ref<Data> => {
+        const result = shallowRef<Data>(defaultValue as Data) as Ref<Data>;
         watchEffect(async () => {
             triggerRef.value;
             try {
                 result.value = await execute(false, ...args);
             } catch {
-                result.value = defaultValue;
+                result.value = defaultValue as Data;
             }
         });
-
         return result;
     };
 
     const getGroupByArg = (index: number = -1, arg: any = null): Ref<Data[]> => {
         return computed(() => {
             const data: Data[] = [];
-
             for (const key of cache.value.keys()) {
-                if (index === -1) data.push(cache.value.get(key)!);
-                else {
+                if (index === -1) {
+                    data.push(cache.value.get(key)!);
+                } else {
                     let args = JSON.parse(key);
-
                     if (args[index] && JSON.stringify(args[index]) === JSON.stringify(arg)) {
                         data.push(cache.value.get(key)!);
                     }
                 }
             }
-
             return data;
         });
     };
@@ -213,20 +167,3 @@ export function useApi<Result, AdaptedResult = Result>(
         isLoading,
     };
 }
-
-interface Product {
-    id: number
-}
-
-interface AdaptedProduct {
-    id: number
-}
-
-
-const { getRef } = useApi((): Promise<Product> => fetch('http://localhost:8080').then((res) => res.json()), {
-    adapter: (response): AdaptedProduct => ({ id: response.id } )
-});
-
-const data = getRef();
-
-data.value
