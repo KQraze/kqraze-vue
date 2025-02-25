@@ -14,7 +14,7 @@
 ```ts
 type UseApiReturn<Data> = {
     isLoading: Ref<boolean>;
-    error: Ref<Error | null>;
+    error: Ref<unknown>;
     clear: () => void;
     clearOne: (...args: any[]) => void;
     execute: (...args: any[]) => Promise<Data>;
@@ -22,7 +22,7 @@ type UseApiReturn<Data> = {
     getRef: (defaultValue?: Data, ...args: any[]) => Ref<Data>;
     getGroupByArg: (index?: number, arg?: any) => Ref<Data[]>;
     onSuccess: SubscribeEvent<Data>;
-    onError: SubscribeEvent<Error | null>;
+    onError: SubscribeEvent<unknown>;
     onFinally: SubscribeEvent<void>;
 };
 ```
@@ -118,7 +118,7 @@ Returns an array of data grouped by the specified argument.
 ### `isLoading` → `Ref<boolean>`
 Loading state flag.
 
-### `error` → `Ref<Error | null>`
+### `error` → `Ref<unknown>`
 Stores an error if the request fails.
 
 ### `onSuccess(callback)`

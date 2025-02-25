@@ -17,7 +17,7 @@ export type UseApiReturn<Data> = {
     isLoading: Ref<boolean>;
 
     /** Stores an error if the API request fails. */
-    error: Ref<Error | null>;
+    error: Ref<unknown>;
 
     /** Clears the entire cache of stored API responses. */
     clear: () => void;
@@ -49,7 +49,7 @@ export type UseApiReturn<Data> = {
     onSuccess: SubscribeEvent<Data>;
 
     /** Event triggered when a request fails. */
-    onError: SubscribeEvent<Error | null>;
+    onError: SubscribeEvent<unknown>;
 
     /** Event triggered when a request completes, regardless of success or failure. */
     onFinally: SubscribeEvent<void>;
@@ -86,12 +86,12 @@ export function useApi<Result, AdaptedResult = Result>(
     type Data = AdaptedResult extends Result ? Result : AdaptedResult;
 
     const isLoading: Ref<boolean> = ref(false);
-    const error: Ref<Error | null> = ref(null);
+    const error: Ref<unknown> = ref(null);
     const triggerRef: Ref<number> = ref(0);
     const cache: Ref<Map<string, Data>> = ref(new Map());
 
     const successHook = createEventHook<Data>();
-    const errorHook = createEventHook<Error>();
+    const errorHook = createEventHook<unknown>();
     const finallyHook = createEventHook<void>();
 
     const execute = async (ignoreCache = false, ...args: any[]): Promise<Data> => {
@@ -113,7 +113,7 @@ export function useApi<Result, AdaptedResult = Result>(
             successHook.trigger(adaptedData);
 
             return adaptedData;
-        } catch (err: any) {
+        } catch (err: unknown) {
             error.value = err;
             errorHook.trigger(err);
             throw err;
