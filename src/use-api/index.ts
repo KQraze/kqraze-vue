@@ -1,5 +1,6 @@
 import {computed, ref, shallowRef, watchEffect, Ref} from 'vue';
 import {createEventHook, SubscribeEvent} from '../create-event-hook';
+
 /**
  * A function that adapts the raw response from the API into a different shape or structure.
  * @param response - The raw response from the API.
@@ -13,28 +14,26 @@ export type AdapterFunction<Result, AdaptedResult> = (response: Result) => Adapt
  * If an `adapter` function is provided in `UseApiOptions`, the result will be of type `AdaptedResult`.
  * Otherwise, it will be of type `Result | null`.
  */
-export type UseApiData<Result, AdaptedResult, Options extends UseApiOptions<Result, AdaptedResult>> = Options extends {
-        adapter: AdapterFunction<Result, AdaptedResult>
-    }
-    ? AdaptedResult
-    : Result | null;
+export type UseApiData<Result, AdaptedResult> = Result | AdaptedResult;
 
+
+export interface UseApiOptions {}
 /**
  * Configuration options for the `useApi` composable.
  * @property adapter - An optional adapter function to transform the raw API response.
  */
-export type UseApiOptions<Result, AdaptedResult> = {
+export interface UseApiOptions<Result, AdaptedResult> {
     /**
      * `adapter` - An optional function to adapt the raw API response into a different structure.
      * */
-    adapter?: AdapterFunction<Result, AdaptedResult>;
-};
+    adapter: AdapterFunction<Result, AdaptedResult>;
+}
 
 /**
  * The return type of the `useApi` composable.
  * Provides methods and properties to interact with the API, manage cache, and handle events.
  */
-export interface UseApiReturn<Result, AdaptedResult, Options extends UseApiOptions<Result, AdaptedResult>> {
+export interface UseApiReturn<Result> {
     /**
      * Indicates whether the request is currently in progress.
      */
@@ -60,7 +59,7 @@ export interface UseApiReturn<Result, AdaptedResult, Options extends UseApiOptio
      * @param args - The arguments to pass to the API request.
      * @returns The result of the API request, either raw or adapted.
      */
-    execute: (...args: any[]) => Promise<UseApiData<Result, AdaptedResult, Options>>;
+    execute: (...args: any[]) => Promise<Result>;
     /**
      * Executes the API request, ignoring the cache.
      *
@@ -78,18 +77,18 @@ export interface UseApiReturn<Result, AdaptedResult, Options extends UseApiOptio
      * @param args - The arguments to pass to the API request.
      * @returns A reactive reference to the API result.
      */
-    getRef: (defaultValue?: UseApiData<Result, AdaptedResult, Options>, ...args: any[]) => Ref<UseApiData<Result, AdaptedResult, Options>>;
+    getRef: (defaultValue?: Result, ...args: any[]) => Ref<Result>;
     /**
      * Groups cached results by a specific argument index.
      * @param index - The index of the argument to group by. If `-1`, groups all results.
      * @param arg - The value of the argument to filter by.
      * @returns A reactive reference to the grouped results.
      */
-    getGroupByArg: (index?: number, arg?: any) => Ref<UseApiData<Result, AdaptedResult, Options>[]>;
+    getGroupByArg: (index?: number, arg?: any) => Ref<Result[]>;
     /**
      * Subscribes to the success event, triggered when a request completes successfully.
      */
-    onSuccess: SubscribeEvent<UseApiData<Result, AdaptedResult, Options>>;
+    onSuccess: SubscribeEvent<Result>;
     /**
      * Subscribes to the error event, triggered when a request fails.
      */
@@ -100,6 +99,17 @@ export interface UseApiReturn<Result, AdaptedResult, Options extends UseApiOptio
     onFinally: SubscribeEvent<void>;
 }
 
+
+export function useApi<Result>(
+    request: (...args: any[]) => Promise<Result>,
+    options: UseApiOptions
+): UseApiReturn<Result>;
+
+export function useApi<Result, AdaptedResult = Result>(
+    request: (...args: any[]) => Promise<Result>,
+    options: UseApiOptions<Result, AdaptedResult>
+): UseApiReturn<AdaptedResult>;
+
 /**
  * A composable function to handle API requests with caching, adapters, and event hooks.
  * @param request - The function that performs the API request.
@@ -108,10 +118,10 @@ export interface UseApiReturn<Result, AdaptedResult, Options extends UseApiOptio
  */
 export function useApi<Result, AdaptedResult = Result>(
     request: (...args: any[]) => Promise<Result>,
-    options?: UseApiOptions<Result, AdaptedResult>,
-): UseApiReturn<Result, AdaptedResult, UseApiOptions<Result, AdaptedResult>> {
+    options?: UseApiOptions,
+): UseApiReturn<AdaptedResult>;  {
 
-    type Data = UseApiData<Result, AdaptedResult, UseApiOptions<Result, AdaptedResult>>;
+    type Data = UseApiData<Result, AdaptedResult>;
 
     const isLoading: Ref<boolean> = ref(false);
     const error: Ref<Error | null> = ref(null);
@@ -216,3 +226,20 @@ export function useApi<Result, AdaptedResult = Result>(
         isLoading,
     };
 }
+
+interface Product {
+    id: number
+}
+
+interface AdaptedProduct {
+    id: number
+}
+
+
+const { getRef } = useApi((): Promise<Product> => fetch('http://localhost:8080').then((res) => res.json()), {
+    adapter: (response): AdaptedProduct => ({ id: response.id } )
+});
+
+const data = getRef();
+
+data.value
