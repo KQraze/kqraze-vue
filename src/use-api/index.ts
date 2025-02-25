@@ -125,13 +125,13 @@ export function useApi<Result, AdaptedResult = Result>(
 
     const isLoading: Ref<boolean> = ref(false);
     const error: Ref<Error | null> = ref(null);
+    const triggerRef: Ref<number> = ref(0);
+
+    const cache: Ref<Map<string, Data>> = ref(new Map());
 
     const successHook = createEventHook<Data>();
     const errorHook = createEventHook<Error>();
     const finallyHook = createEventHook<void>();
-
-    const cache: Ref<Map<string, Data>> = ref(new Map());
-    const triggerRef: Ref<number> = ref(0);
 
     const execute = async (ignoreCache = false, ...args: any[]): Promise<Data> => {
         const cacheKey = JSON.stringify(args);
@@ -163,19 +163,6 @@ export function useApi<Result, AdaptedResult = Result>(
 
             finallyHook.trigger();
         }
-    };
-
-    const load = (...args: any[]): void => {
-        execute(true, ...args).then(() => triggerRef.value++);
-    };
-
-    const clearOne = (...args: any[]): void => {
-        const cacheKey = JSON.stringify(args);
-        cache.value.delete(cacheKey);
-    };
-
-    const clear = (): void => {
-        cache.value.clear();
     };
 
     const getRef = (defaultValue: Data = null, ...args: any[]): Ref<Data> => {
@@ -215,9 +202,9 @@ export function useApi<Result, AdaptedResult = Result>(
     return {
         getRef,
         getGroupByArg,
-        clear,
-        clearOne,
-        load,
+        clear: () => cache.value.clear(),
+        clearOne: (...args: any[]) => cache.value.delete(JSON.stringify(args)),
+        load: (...args: any[]) => execute(true, ...args).then(() => triggerRef.value++),
         execute: (...args: any[]) => execute(false, ...args),
         onFinally: finallyHook.on,
         onSuccess: successHook.on,
