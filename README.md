@@ -19,6 +19,8 @@ npm install -D @kqraze/vue
 >🔹 **[createEventHook()](https://github.com/KQraze/kqraze-vue/blob/main/src/create-event-hook/index.md)**  
   A utility for managing events, allowing you to subscribe, unsubscribe, and trigger handlers.
 
+>🔹 **[useAwaitingEvent()](https://github.com/KQraze/kqraze-vue/blob/main/src/use-awaiting-event/index.md)**  
+A composable utility for managing delayed execution with a waiting state. It allows you to execute an event with a specified timeout, track its progress, cancel it, and dynamically update the timeout.
 ## 🎯 Usage
 
 Here's an example of how to use `createEventHook()`:

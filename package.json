@@ -1,17 +1,13 @@
 {
   "name": "@kqraze/vue",
-  "version": "2.1.3",
+  "version": "2.2.0",
   "description": "A lightweight Vue 3 library for managing API requests with caching, state management, reactivity, and event hooks.",
   "main": "./index.cjs",
   "module": "./index.js",
   "types": "./index.d.ts",
   "files": [
-    "index.js",
-    "index.d.ts",
-    "index.cjs",
-    "use-api",
-    "create-event-hook",
-    "use-awaiting-event"
+    "./index.*",
+    "./*/index.d.ts"
   ],
   "scripts": {
     "test": "vitest",

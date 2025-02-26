@@ -1,9 +1,6 @@
 .idea
 node_modules
-index.umd.js
-index.mjs
-index.d.ts
-index.js
+index.*
 
-use-api
-create-event-hook
+./*/index.d.ts
+./*/index.test.d.ts
