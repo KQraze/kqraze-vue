@@ -10,7 +10,8 @@
     "index.d.ts",
     "index.cjs",
     "use-api",
-    "create-event-hook"
+    "create-event-hook",
+    "use-awaiting-event"
   ],
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
