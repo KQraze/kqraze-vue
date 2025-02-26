@@ -32,7 +32,7 @@ export interface UseAwaitingEventReturn {
 export const useAwaitingEvent = (initialTimeout: number = 1000): UseAwaitingEventReturn => {
     const isWaiting = ref(false);
     const timeout = ref(initialTimeout);
-    let timer: ReturnType<typeof setTimeout> | null = null;
+    const timer = ref<ReturnType<typeof setTimeout>>();
 
     const execute = <T>(data?: T): Promise<T> => {
         if (isWaiting.value) return Promise.reject(new Error("The operation is already performed"));
@@ -40,29 +40,31 @@ export const useAwaitingEvent = (initialTimeout: number = 1000): UseAwaitingEven
         isWaiting.value = true;
 
         return new Promise<T>((resolve, reject) => {
-            timer = setTimeout(() => {
+            timer.value = setTimeout(() => {
                 isWaiting.value = false;
                 resolve(data as T);
             }, timeout.value);
 
             watch(timeout, () => {
                 if (timer) {
-                    clearTimeout(timer);
+                    clearTimeout(timer.value);
                     reject(new Error("The timer is canceled due to a change in delay"));
                 }
             });
+
+            watch(timer, () => {
+                reject(new Error("The timer is canceled forcibly"))
+            })
         });
     };
 
     const cancel = () => {
         if (timer) {
-            clearTimeout(timer);
+            clearTimeout(timer.value);
             isWaiting.value = false;
-            timer = null;
+            timer.value = undefined;
         }
     };
-
-    onUnmounted(cancel);
 
     return {
         isWaiting,
