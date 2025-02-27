@@ -10,7 +10,7 @@ export default defineConfig({
     build: {
         lib: {
             entry: './src/index.ts',
-            name: 'useApi',
+            name: 'kqraze-vue',
             fileName: 'index',
             formats: ['es', 'cjs'],
         },
@@ -22,6 +22,5 @@ export default defineConfig({
                 },
             },
         },
-        outDir: '.',
     },
 });
