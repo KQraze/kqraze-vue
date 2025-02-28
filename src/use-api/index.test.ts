@@ -1,7 +1,7 @@
 import {afterEach, beforeEach, describe, expect, it, vi} from "vitest";
 import {useApi} from "./index";
-import {useAwaitingEvent, UseAwaitingEventReturn} from "..";
-import {nextTick, watch} from "vue";
+import {useAwaitingEvent, UseAwaitingEventReturn, deepClone} from "..";
+import {nextTick} from "vue";
 import {flushPromises} from "@vue/test-utils";
 
 interface User {
@@ -10,19 +10,23 @@ interface User {
     age?: number;
 }
 
-const users: User[] = [
+const originalUsers: User[] = [
     { id: 1, name: 'Daniel', age: 18 },
     { id: 2, name: 'Alex', age: 20 },
     { id: 3, name: 'Vanya', age: 22 },
 ]
+let users: User[];
 
 describe('useApi testing', () => {
     let awaitingEvent: UseAwaitingEventReturn;
 
-    const getUsers = () => awaitingEvent.execute(users);
+    const getUsers = () => awaitingEvent.execute(deepClone(users));
     const getUser = (id: number) => awaitingEvent.execute(users.find((user) => user.id === id))
+    const createUser = ({ name, age }: User) => awaitingEvent.execute(users.push({ id: users.length + 1, name, age }))
 
     beforeEach(() => {
+        users = deepClone(originalUsers);
+
         vi.useFakeTimers();
         awaitingEvent = useAwaitingEvent(1000);
 
@@ -50,6 +54,32 @@ describe('useApi testing', () => {
 
         expect(refResponse.value).toEqual(users.find((user) => user.id === 1));
     })
+
+    it('getRef should update if load called', async () => {
+        const { getRef, load: loadUsers } = useApi(getUsers);
+        const { load: addUser } = useApi(createUser)
+
+        const refResponse = getRef()
+        await flushPromises();
+        await nextTick();
+
+        expect(refResponse.value).toEqual(originalUsers);
+
+        await addUser({ name: 'Petya', age: 17 })
+
+        await flushPromises();
+        await nextTick();
+
+        expect(refResponse.value).toEqual(originalUsers);
+
+        await loadUsers()
+
+        await flushPromises();
+        await nextTick();
+
+        expect(refResponse.value).toEqual(users);
+    });
+
 
     it('getGroupByArg without arg. Testing cache clear', async () => {
         const { execute, getGroupByArg, clear, clearOne } = useApi(getUser);

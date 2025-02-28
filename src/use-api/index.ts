@@ -12,7 +12,7 @@ export type AdapterFunction<Result, AdaptedResult> = (response: Result) => Adapt
  * The return type of the useApi composable.
  * @template Data - The type of the data returned from the API (adapted or raw).
  */
-export type UseApiReturn<Data> = {
+export type UseApiReturn<Data, Args extends any[] = any[]> = {
     /** Indicates whether the API request is in progress. */
     isLoading: Ref<boolean>;
 
@@ -23,20 +23,20 @@ export type UseApiReturn<Data> = {
     clear: () => void;
 
     /** Removes a specific cached response based on provided arguments. */
-    clearOne: (...args: any[]) => void;
+    clearOne: (...args: Args) => void;
 
     /** Executes the API request and returns the data. Uses caching unless explicitly bypassed. */
-    execute: (...args: any[]) => Promise<Data>;
+    execute: (...args: Args) => Promise<Data>;
 
     /** Forces a reload of data without using cache. */
-    load: (...args: any[]) => void;
+    load: (...args: Args) => Promise<Data>;
 
     /**
      * Returns a reactive reference to the API response data.
      * @param defaultValue - The initial value before the request completes.
      * @param args - Arguments used for fetching the data.
      */
-    getRef: (defaultValue?: Data, ...args: any[]) => Ref<Data>;
+    getRef: (defaultValue?: Data, ...args: Args) => Ref<Data>;
 
     /**
      * Retrieves a reactive array of results grouped by a specific argument.
@@ -61,28 +61,29 @@ export type UseApiReturn<Data> = {
  * @param request - A function that returns a Promise resolving to API data.
  * @param options
  */
-export function useApi<Result>(
-    request: (...args: any[]) => Promise<Result>,
+export function useApi<Result, Args extends any[] = any[]>(
+    request: (...args: Args) => Promise<Result>,
     options?: { adapter?: undefined }
-): UseApiReturn<Result>;
+): UseApiReturn<Result, Args>;
+
 
 /**
  * Overload for useApi when an adapter function is provided.
  * @template Result - The original API response type.
  * @template AdaptedResult - The transformed type after applying the adapter function.
  */
-export function useApi<Result, AdaptedResult>(
-    request: (...args: any[]) => Promise<Result>,
+export function useApi<Result, AdaptedResult, Args extends any[] = any[]>(
+    request: (...args: Args) => Promise<Result>,
     options: { adapter: AdapterFunction<Result, AdaptedResult> }
-): UseApiReturn<AdaptedResult>;
+): UseApiReturn<AdaptedResult, Args>;
 
 /**
  * Implementation of the useApi composable.
  */
-export function useApi<Result, AdaptedResult = Result>(
-    request: (...args: any[]) => Promise<Result>,
+export function useApi<Result, AdaptedResult = Result, Args extends any[] = any[]>(
+    request: (...args: Args) => Promise<Result>,
     options?: { adapter?: AdapterFunction<Result, AdaptedResult> }
-): UseApiReturn<AdaptedResult extends Result ? Result : AdaptedResult> {
+): UseApiReturn<AdaptedResult extends Result ? Result : AdaptedResult, Args> {
     type Data = AdaptedResult extends Result ? Result : AdaptedResult;
 
     const isLoading: Ref<boolean> = ref(false);
@@ -94,7 +95,7 @@ export function useApi<Result, AdaptedResult = Result>(
     const errorHook = createEventHook<unknown>();
     const finallyHook = createEventHook<void>();
 
-    const execute = async (ignoreCache = false, ...args: any[]): Promise<Data> => {
+    const execute = async (ignoreCache = false, ...args: Args): Promise<Data> => {
         const cacheKey = JSON.stringify(args);
         if (!ignoreCache && cache.value.has(cacheKey)) {
             return cache.value.get(cacheKey)!;
@@ -123,7 +124,7 @@ export function useApi<Result, AdaptedResult = Result>(
         }
     };
 
-    const getRef = (defaultValue?: Data, ...args: any[]): Ref<Data> => {
+    const getRef = (defaultValue?: Data, ...args: Args): Ref<Data> => {
         const result = shallowRef<Data>(defaultValue as Data) as Ref<Data>;
         watchEffect(async () => {
             triggerRef.value;
@@ -149,8 +150,12 @@ export function useApi<Result, AdaptedResult = Result>(
         getGroupByArg,
         clear: () => cache.value.clear(),
         clearOne: (...args: any[]) => cache.value.delete(JSON.stringify(args)),
-        load: (...args: any[]) => execute(true, ...args).then(() => triggerRef.value++),
-        execute: (...args: any[]) => execute(false, ...args),
+        load: (...args: Args) => execute(true, ...args).then((data) => {
+            triggerRef.value++
+
+            return data;
+        }),
+        execute: (...args: Args) => execute(false, ...args),
         onFinally: finallyHook.on,
         onSuccess: successHook.on,
         onError: errorHook.on,
