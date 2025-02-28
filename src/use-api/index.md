@@ -10,23 +10,6 @@
 - 🎯 **Data Adaptation** — Pass a transformation function if needed.
 - 📡 **Events** — Subscribe to `onSuccess`, `onError`, `onFinally`.
 
-## 📜 Typing
-```ts
-type UseApiReturn<Data, Args extends any[] = any[]> = {
-    isLoading: Ref<boolean>;
-    error: Ref<unknown>;
-    clear: () => void;
-    clearOne: (...args: Args) => void;
-    execute: (...args: Args) => Promise<Data>;
-    load: (...args: Args) => void;
-    getRef: (defaultValue?: Data, ...args: Args) => Ref<Data>;
-    getGroupByArg: (index?: number, arg?: any) => Ref<Data[]>;
-    onSuccess: SubscribeEvent<Data>;
-    onError: SubscribeEvent<unknown>;
-    onFinally: SubscribeEvent<void>;
-};
-```
-
 ## 🚀 Usage Examples
 
 ### 🔹 Simple API Request (with caching)
@@ -129,3 +112,85 @@ Triggers when the request fails.
 
 ### `onFinally(callback)`
 Triggers at the end of the request (always).
+
+## 📜 Typing
+
+```ts
+type UseApiOptions<Result, AdaptedResult, AdaptedError> = {
+    /**
+     * Function to adapt the API response.
+     */
+    adapter?: (response: Result) => AdaptedResult;
+
+    /**
+     * Function to adapt the error.
+     */
+    errorAdapter?: (error: unknown) => AdaptedError;
+
+    /**
+     * Cache duration in seconds.
+     * If provided, the cached data will be considered valid for this duration.
+     */
+    cacheTime?: number;
+};
+
+/**
+ * Return type of the useApi composable.
+ */
+type UseApiReturn<Data, ErrorT = unknown, Args extends any[] = any[]> = {
+    /**
+     * Indicates if the API request is in progress.
+     */
+    isLoading: Ref<boolean>;
+
+    /**
+     * Stores the error if the API request fails.
+     */
+    error: Ref<ErrorT>;
+
+    /**
+     * Clears the entire cache.
+     */
+    clear: () => void;
+
+    /**
+     * Clears a specific cached response based on the provided arguments.
+     */
+    clearOne: (...args: Args) => void;
+
+    /**
+     * Executes the API request and returns the data. Uses caching unless explicitly bypassed.
+     */
+    execute: (...args: Args) => Promise<Data>;
+
+    /**
+     * Forces a reload of data without using the cache.
+     */
+    load: (...args: Args) => Promise<Data>;
+
+    /**
+     * Returns a reactive reference to the API response data.
+     */
+    getRef: (defaultValue?: Data, ...args: Args) => Ref<Data>;
+
+    /**
+     * Retrieves a reactive array of results grouped by a specific argument.
+     */
+    getGroupByArg: <I extends keyof Args>(index?: I, arg?: Args[I]) => ComputedRef<Data[]>;
+
+    /**
+     * Event triggered when a request succeeds.
+     */
+    onSuccess: SubscribeEvent<Data>;
+
+    /**
+     * Event triggered when a request fails.
+     */
+    onError: SubscribeEvent<ErrorT>;
+
+    /**
+     * Event triggered when a request completes, regardless of success or failure.
+     */
+    onFinally: SubscribeEvent<void>;
+};
+```
