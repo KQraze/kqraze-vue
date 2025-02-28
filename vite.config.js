@@ -4,7 +4,7 @@ import dts from 'vite-plugin-dts';
 
 export default defineConfig({
     plugins: [
-        vue(), // Поддержка Vue
+        vue(),
         dts({ insertTypesEntry: true }),
     ],
     build: {

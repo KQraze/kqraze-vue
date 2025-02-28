@@ -21,6 +21,10 @@ npm install -D @kqraze/vue
 
 >🔹 **[useAwaitingEvent()](https://github.com/KQraze/kqraze-vue/blob/main/src/use-awaiting-event/index.md)**  
 A composable utility for managing delayed execution with a waiting state. It allows you to execute an event with a specified timeout, track its progress, cancel it, and dynamically update the timeout.
+
+>🔹 **[deepClone()](https://github.com/KQraze/kqraze-vue/blob/main/src/deep-clone)**  
+A utility to clone a JSON Like object and get rid of the reference (the same as the same as `JSON.parse(JSON.stringify(data))`)
+
 ## 🎯 Usage
 
 Here's an example of how to use `createEventHook()`:

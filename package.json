@@ -1,6 +1,6 @@
 {
   "name": "@kqraze/vue",
-  "version": "2.2.1",
+  "version": "2.2.2",
   "description": "A lightweight Vue 3 library for managing API requests with caching, state management, reactivity, and event hooks.",
   "main": "./index.cjs",
   "module": "./index.js",
@@ -12,6 +12,7 @@
     "README.md"
   ],
   "scripts": {
+    "build": "vite build",
     "prepublishOnly": "vite build && node scripts/move-dist.js",
     "postpublish": "node scripts/cleanup.js",
     "publish": "npm publish --access=public"
@@ -21,13 +22,7 @@
     "url": "git+https://github.com/KQraze/kqraze-vue.git"
   },
   "keywords": [
-    "vue",
-    "vue3",
-    "api",
-    "composable",
-    "caching",
-    "hooks",
-    "reactivity"
+    "vue"
   ],
   "author": {
     "name": "KQraze",

@@ -12,14 +12,14 @@
 
 ## 📜 Typing
 ```ts
-type UseApiReturn<Data> = {
+type UseApiReturn<Data, Args extends any[] = any[]> = {
     isLoading: Ref<boolean>;
     error: Ref<unknown>;
     clear: () => void;
-    clearOne: (...args: any[]) => void;
-    execute: (...args: any[]) => Promise<Data>;
-    load: (...args: any[]) => void;
-    getRef: (defaultValue?: Data, ...args: any[]) => Ref<Data>;
+    clearOne: (...args: Args) => void;
+    execute: (...args: Args) => Promise<Data>;
+    load: (...args: Args) => void;
+    getRef: (defaultValue?: Data, ...args: Args) => Ref<Data>;
     getGroupByArg: (index?: number, arg?: any) => Ref<Data[]>;
     onSuccess: SubscribeEvent<Data>;
     onError: SubscribeEvent<unknown>;
@@ -103,7 +103,7 @@ Returns a reactive reference to the data. The request is executed automatically.
 ### `execute(...args)` → `Promise<Data>`
 Forces execution of the request (using cache).
 
-### `load(...args)`
+### `load(...args)` → `Promise<Data>`
 Forces data reload (ignoring cache).
 
 ### `clear()`
