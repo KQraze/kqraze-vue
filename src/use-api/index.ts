@@ -109,9 +109,9 @@ type UseApiReturn<Data, ErrorT = unknown, Args extends any[] = any[]> = {
  * @template AdaptedResult - The transformed type after applying the adapter function.
  * @template AdaptedError - The transformed type after applying the error adapter function.
  * @template Args - The type of the arguments passed to the API request.
- * @param request - A function that returns a Promise resolving to API data.
- * @param options - Optional configuration.
- * @returns An object with methods and state for managing API requests.
+ * @param {(...args: Args) => Promise<Result>} request
+ * @param {UseApiOptions<Result, AdaptedResult, AdaptedError>} [options] - Опции
+ * @returns {UseApiReturn<Result, AdaptedError, Args>}
  */
 export function useApi<Result, AdaptedResult = Result, AdaptedError = unknown, Args extends any[] = any[]>(
     request: (...args: Args) => Promise<Result>,

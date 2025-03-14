@@ -1,6 +1,6 @@
 {
   "name": "@kqraze/vue",
-  "version": "2.2.2",
+  "version": "2.2.6",
   "description": "A lightweight Vue 3 library for managing API requests with caching, state management, reactivity, and event hooks.",
   "main": "./index.cjs",
   "module": "./index.js",

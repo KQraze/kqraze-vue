@@ -21,7 +21,7 @@ describe('useApi testing', () => {
     let awaitingEvent: UseAwaitingEventReturn;
 
     const getUsers = () => awaitingEvent.execute(deepClone(users));
-    const getUser = (id: number) => awaitingEvent.execute(users.find((user) => user.id === id))
+    const getUser = (id: number) => awaitingEvent.execute(deepClone(users.find((user) => user.id === id)))
     const createUser = ({ name, age }: User) => awaitingEvent.execute(users.push({ id: users.length + 1, name, age }))
 
     beforeEach(() => {
