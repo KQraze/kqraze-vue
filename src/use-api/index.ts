@@ -116,9 +116,9 @@ type UseApiReturn<Data, ErrorT = unknown, Args extends any[] = any[]> = {
 export function useApi<Result, AdaptedResult = Result, AdaptedError = unknown, Args extends any[] = any[]>(
     request: (...args: Args) => Promise<Result>,
     options?: UseApiOptions<Result, AdaptedResult, AdaptedError>
-): UseApiReturn<{ fetchedAt?: Date } & (AdaptedResult extends Result ? Result : AdaptedResult), AdaptedError, Args> {
+): UseApiReturn<AdaptedResult extends Result ? Result : AdaptedResult, AdaptedError, Args> {
 
-    type Data = { fetchedAt?: Date } & (AdaptedResult extends Result ? Result : AdaptedResult);
+    type Data = AdaptedResult extends Result ? Result : AdaptedResult;
 
     const successHook = createEventHook<Data>();
     const errorHook = createEventHook<AdaptedError>();
@@ -127,7 +127,7 @@ export function useApi<Result, AdaptedResult = Result, AdaptedError = unknown, A
     const isLoading = ref(false);
     const error = ref<AdaptedError | null>(null);
     const triggerRef = ref(0);
-    const cache: Ref<Map<string, Data>> = ref(new Map());
+    const cache: Ref<Map<string, Data & { fetchedAt?: Date }>> = ref(new Map());
 
     const execute = async (ignoreCache = false, ...args: Args): Promise<Data> => {
         const cacheKey = JSON.stringify(args);
@@ -178,18 +178,18 @@ export function useApi<Result, AdaptedResult = Result, AdaptedError = unknown, A
     };
 
     const getRef = (defaultValue?: Data, ...args: Args): Ref<Data> => {
-        const result = shallowRef<Data | undefined>(defaultValue);
+        const result = shallowRef(defaultValue as Data) as Ref<Data>;
 
         watchEffect(async () => {
             triggerRef.value;
             try {
                 result.value = await execute(false, ...args);
             } catch {
-                result.value = defaultValue;
+                result.value = defaultValue as Data;
             }
         });
 
-        return result as Ref<Data>;
+        return result;
     };
 
     const getGroupByArg = <I extends keyof Args>(index?: I, arg?: Args[I]): ComputedRef<Data[]> => {
@@ -212,3 +212,4 @@ export function useApi<Result, AdaptedResult = Result, AdaptedError = unknown, A
         onFinally: finallyHook.on,
     };
 }
+
