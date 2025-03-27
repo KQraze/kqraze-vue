@@ -158,7 +158,7 @@ export function useApi<Result, AdaptedResult = Result, AdaptedError = unknown, A
                 ? {...adaptedData, fetchedAt: new Date() }
                 : adaptedData;
 
-            cache.value.set(cacheKey, adaptedData);
+            cache.value.set(cacheKey, adaptedData as Data & { fetchedAt?: Date });
             successHook.trigger(adaptedData);
 
             triggerRef.value++;
